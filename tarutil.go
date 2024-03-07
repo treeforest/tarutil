@@ -30,9 +30,13 @@ func Extract(src, dst string) error {
 	if dst == "" {
 		dst = "."
 	}
-	dst = filepath.Clean(dst)
+	absPath, err := filepath.Abs(dst)
+	if err != nil {
+		return fmt.Errorf("failed to filepath.Abs: %s", dst)
+	}
+	dst = filepath.Clean(absPath)
 
-	err := os.MkdirAll(dst, 0755)
+	err = os.MkdirAll(dst, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create target directory: %w", err)
 	}
@@ -66,7 +70,7 @@ func Extract(src, dst string) error {
 
 		target := filepath.Clean(filepath.Join(dst, header.Name)) //nolint:gosec
 		if !strings.HasPrefix(target, dst) {
-			return fmt.Errorf("target does not have the expected prefix: %s", dst)
+			return fmt.Errorf("target '%s' does not have the expected prefix: %s", target, dst)
 		}
 
 		if header.FileInfo().IsDir() {
